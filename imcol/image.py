@@ -24,13 +24,16 @@ class Image(object):
         pass
 
     @abstractmethod
-    def get(self, ch, plane = 0):
+    def get(self, ch):
         pass
     
     @abstractmethod
     def unload(self):
         pass
 
+    @abstractmethod
+    def channels(self):
+        pass
 
     @abstractmethod
     def __getstate__(self):
@@ -51,9 +54,7 @@ class FileImage(object):
     def has_channel(self, ch):
         return ch in self.files
 
-    def get(self, ch, plane = 0):
-        if plane != 0:
-            raise ValueError('FileImage.get: Plane is not zero')
+    def get(self, ch):
         if ch in self.cache:
             return self.cache[ch]
         data = self.open_file(self.files[ch])
@@ -63,11 +64,15 @@ class FileImage(object):
     def unload(self):
         self.cache = {}
 
+    def channels(self):
+        return self.files.keys()
+
     def open_file(self, fname):
         from imread import imread
         return imread(fname)
 
     def composite(self):
+        import mahotas
         def g(ch):
             if self.has_channel(ch): return self.get(ch)
         return mahotas.as_rgb(g('protein'), g('dna'), None)
@@ -101,7 +106,10 @@ class MultiFileImage(FileImage):
     def __init__(self, files=None):
         super(MultiFileImage, self).__init__(files)
 
-    def get(self, ch, plane = 0):
+    def get(self, ch, plane=None):
+        if plane is None:
+            import numpy as np
+            return np.array([self.get(ch, p) for p,_ in enumerate(self.files[ch])])
         if (ch,plane) in self.cache:
             return self.cache[ch, plane]
         data = self.open_file(self.files[ch][plane])
@@ -110,6 +118,7 @@ class MultiFileImage(FileImage):
     
 
     def composite(self, plane='central'):
+        import mahotas
         if plane == 'central':
             plane = len(self.files.values()[0])//2
         def g(ch):
