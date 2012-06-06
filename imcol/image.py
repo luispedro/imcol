@@ -71,11 +71,13 @@ class FileImage(object):
         from imread import imread
         return imread(fname)
 
-    def composite(self):
+    def composite(self, channels=('protein', 'dna', None)):
         import mahotas
         def g(ch):
-            if self.has_channel(ch): return self.get(ch)
-        return mahotas.as_rgb(g('protein'), g('dna'), None)
+            if ch is not None and \
+                self.has_channel(ch): return self.get(ch)
+        c0,c1,c2 = channels
+        return mahotas.as_rgb(g(c0),g(c1),g(c2))
 
     def __getstate__(self):
         copy = self.__dict__.copy()
@@ -107,17 +109,19 @@ class StackFileImage(FileImage):
     def get(self, ch, plane=None):
         data = super(StackFileImage, self).get(ch)
         if plane is None:
+            import numpy as np
             return np.array(data)
         return data[plane]
 
-    def composite(self, plane='central'):
+    def composite(self, channels=('protein', 'dna', None), plane='central'):
         import mahotas
         if plane == 'central':
             plane = len(self.files.values()[0])//2
         def g(ch):
-            if self.has_channel(ch):
+            if ch is not None and self.has_channel(ch):
                 return self.get(ch, plane)
-        return mahotas.as_rgb(g('protein'), g('dna'), None)
+        c0,c1,c2 = channels
+        return mahotas.as_rgb(g(c0), g(c1), g(c2))
 
     def open_file(self, fname):
         from imread import imread_multi
