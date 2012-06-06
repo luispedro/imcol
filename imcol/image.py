@@ -102,7 +102,32 @@ class FileImage(object):
         from pylab import imshow
         imshow(self.composite())
 
+
+class StackFileImage(FileImage):
+    def get(self, ch, plane=None):
+        data = super(StackFileImage, self).get(ch)
+        if plane is None:
+            return np.array(data)
+        return data[plane]
+
+    def composite(self, plane='central'):
+        import mahotas
+        if plane == 'central':
+            plane = len(self.files.values()[0])//2
+        def g(ch):
+            if self.has_channel(ch):
+                return self.get(ch, plane)
+        return mahotas.as_rgb(g('protein'), g('dna'), None)
+
+    def open_file(self, fname):
+        from imread import imread_multi
+        return imread_multi(fname)
+
+
 class MultiFileImage(FileImage):
+    '''
+    These images have multiple files per channel, each one corresponding to a stack slice
+    '''
     def __init__(self, files=None):
         super(MultiFileImage, self).__init__(files)
 
