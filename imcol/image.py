@@ -26,7 +26,7 @@ class Image(object):
     @abstractmethod
     def get(self, ch):
         pass
-    
+
     @abstractmethod
     def unload(self):
         pass
@@ -38,7 +38,7 @@ class Image(object):
     @abstractmethod
     def __getstate__(self):
         pass
-    
+
     @abstractmethod
     def __setstate__(self, state):
         pass
@@ -60,7 +60,7 @@ class FileImage(object):
         data = self.open_file(self.files[ch])
         self.cache[ch] = data
         return data
-    
+
     def unload(self):
         self.cache = {}
 
@@ -85,7 +85,7 @@ class FileImage(object):
         items = copy.items()
         items.sort(key=lambda it: it[0])
         return items
-    
+
     def __setstate__(self, state):
         self.cache = {}
         for k,v in state:
@@ -111,6 +111,8 @@ class StackFileImage(FileImage):
         if plane is None:
             import numpy as np
             return np.array(data)
+        if plane == 'max':
+            return np.max(data, 0)
         return data[plane]
 
     def composite(self, channels=('protein', 'dna', None), plane='central'):
@@ -120,6 +122,7 @@ class StackFileImage(FileImage):
         def g(ch):
             if ch is not None and self.has_channel(ch):
                 return self.get(ch, plane)
+
         c0,c1,c2 = channels
         return mahotas.as_rgb(g(c0), g(c1), g(c2))
 
@@ -144,7 +147,7 @@ class MultiFileImage(FileImage):
         data = self.open_file(self.files[ch][plane])
         self.cache[ch, plane] = data
         return data
-    
+
 
     def composite(self, plane='central'):
         import mahotas
