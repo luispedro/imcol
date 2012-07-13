@@ -71,7 +71,7 @@ class FileImage(object):
         from imread import imread
         return imread(fname)
 
-    def composite(self, channels=('protein', 'dna', None)):
+    def composite(self, channels=('dna', 'protein', None)):
         import mahotas
         def g(ch):
             if ch is not None and \
@@ -95,14 +95,14 @@ class FileImage(object):
         '''Implement repr() operator'''
         return 'Image( %s )' % repr(self.files)
 
-    def show(self):
+    def show(self, **kwargs):
         '''
         Shows the image composite
 
         See composite.
         '''
         from pylab import imshow
-        imshow(self.composite())
+        imshow(self.composite(**kwargs))
 
 
 class StackFileImage(FileImage):
@@ -115,7 +115,7 @@ class StackFileImage(FileImage):
             return np.max(data, 0)
         return data[plane]
 
-    def composite(self, channels=('protein', 'dna', None), plane='central'):
+    def composite(self, channels=('dna', 'protein', None), plane='central'):
         import mahotas
         if plane == 'central':
             plane = len(self.files.values()[0])//2
@@ -156,5 +156,5 @@ class MultiFileImage(FileImage):
         def g(ch):
             if self.has_channel(ch):
                 return self.get(ch, plane)
-        return mahotas.as_rgb(g('protein'), g('dna'), None)
+        return mahotas.as_rgb(g('dna'), g('protein'), None)
 
