@@ -95,6 +95,14 @@ class FileImage(object):
         '''Implement repr() operator'''
         return 'Image( %s )' % repr(self.files)
 
+
+    def __eq__(self, other):
+        return self.files == other.files
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
     def show(self, **kwargs):
         '''
         Shows the image composite
