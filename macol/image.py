@@ -1,4 +1,4 @@
-# Copyright 2012 Luis Pedro Coelho <luis@luispedro.org>
+# Copyright 2012-2013 Luis Pedro Coelho <luis@luispedro.org>
 # License: MIT
 
 from abc import ABCMeta, abstractmethod
@@ -144,6 +144,9 @@ class MultiFileImage(FileImage):
     These images have multiple files per channel, each one corresponding to a stack slice
     '''
     def __init__(self, files=None):
+        '''
+        im = MultiFileImage({ 'channel0name': [ f0, f1, ...], 'channel1name' : [g0, g1, ...] })
+        '''
         super(MultiFileImage, self).__init__(files)
 
     def get(self, ch, plane=None):
